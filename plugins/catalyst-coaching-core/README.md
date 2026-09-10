@@ -49,7 +49,7 @@ Do not uninstall/reinstall the plugin to update (stale cache). Do not remove the
 
 ## Changelog
 
-- **0.2.1 (2026-09-09)** - coaching-method file replaces the in-plugin CLEAR reference (each coach's own method, placed at onboarding; skills degrade to general questions if absent); state-write retry + `err-drive`; client-as-organizer rule + `ignore_contacts` row; heartbeat file per run. Test-account run 2026-09-09 (method file read, fallback, heartbeat). Readability pass done - 2026-09-09.
+- **0.2.1 (2026-09-09)** - coaching-method file replaces the in-plugin coaching-method reference (each coach's own method, placed at onboarding; skills degrade to general questions if absent); state-write retry + `err-drive`; client-as-organizer rule + `ignore_contacts` row; heartbeat file per run. Test-account run 2026-09-09 (method file read, fallback, heartbeat). Readability pass done - 2026-09-09.
 - **0.2.0 (2026-09-08)** - superseded by 0.2.1 before release; never shipped to a coach.
 - **0.1.2 (2026-08-21)** - telemetry `run_complete` retries on fresh suffixes, falls back to `detail=err`; release process documented; browser update path verified 2026-08-21.
 
