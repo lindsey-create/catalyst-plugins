@@ -1,0 +1,15 @@
+{
+  "name": "catalyst-plugins",
+  "owner": {
+    "name": "Lindsey Hammer, Catalyst AI Solutions",
+    "url": "https://github.com/lindsey-create"
+  },
+  "plugins": [
+    {
+      "name": "catalyst-coaching-core",
+      "source": "./plugins/catalyst-coaching-core",
+      "description": "Catalyst Core coaching ops system for coaches. Drafts only, never sends.",
+      "version": "0.2.1"
+    }
+  ]
+}
