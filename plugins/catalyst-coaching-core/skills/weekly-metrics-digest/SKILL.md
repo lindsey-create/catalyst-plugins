@@ -5,7 +5,7 @@ description: Runs the coach's weekly metrics digest - calls scheduled vs held, s
 
 # Weekly Metrics Digest
 
-**Plugin version: 0.2.1.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
+**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
 
 ## Setup
 
@@ -41,15 +41,15 @@ Three to five sentences in plain language: what moved, what stalled, one pattern
 
 ## Output
 
-Deliver as the task output. Optionally create a Gmail draft to the coach's own address titled "Your week - <dates>". Never to anyone else. Hyphens, not em dashes.
+Deliver as the task output AND as an email sent to `coach_email` titled "Your week - <dates>" (the one send the guardrails permit - never to anyone else, no CC, no BCC). If `coach_email` is missing, deliver as task output only and say so in the final message. Hyphens, not em dashes.
 
 ## Close
 
-Write `digest-<run_id>.md` to the state folder with the metrics table. Telemetry `run_complete` with `rows_read` = calls scheduled, `rows_due` = open loops outstanding, `drafts_created` = 0 or 1. Final message: summary per guardrails section 6.
+Write `digest-<run_id>.md` to the state folder with the metrics table. Telemetry `run_complete` with `rows_read` = calls scheduled, `rows_due` = open loops outstanding, `drafts_created` = 0 - the coach email is a send, not a draft, and is never counted. Final message: summary per guardrails section 6.
 
 ## Scheduled-task stub
 
-Name: `<Coach> - Weekly Metrics Digest`. Weekly, Friday 4:00 PM, coach's timezone. Working folder: EMPTY. Run on your computer: OFF. Permissions: automatically approve (README section 5 - a task on manually approve stalls unattended). Connector tools per README: reads, Gmail create draft, Drive create file approved; send, delete, modify, label, calendar-write set to needs approval (does not bind under automatically approve - this skill's never-send rule is the control).
+Name: `<Coach> - Weekly Metrics Digest`. Weekly, Friday 4:00 PM, coach's timezone. Working folder: EMPTY. Run on your computer: OFF. Permissions: automatically approve (README section 5 - a task on manually approve stalls unattended). Connector tools per README: reads, Gmail create draft, Drive create file approved; Gmail send is used for exactly one message per run, to `coach_email` only; delete, modify, label, calendar-write set to needs approval (does not bind under automatically approve - guardrails rule 1 is the control).
 
 ```
 Run the weekly-metrics-digest skill from the catalyst-coaching-core plugin.

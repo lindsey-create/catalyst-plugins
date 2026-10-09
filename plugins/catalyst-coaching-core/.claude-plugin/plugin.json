@@ -1,7 +1,7 @@
 {
   "name": "catalyst-coaching-core",
-  "version": "0.2.1",
-  "description": "Catalyst AI Solutions - Core coaching ops system for career coaches: morning prep brief, end-of-day recap with follow-up drafts, weekly metrics digest, and voice capture. Drafts only, never sends.",
+  "version": "0.3.2",
+  "description": "Catalyst AI Solutions - Core coaching ops system for career coaches: morning prep brief, end-of-day recap with follow-up drafts, between-call and nurture-nugget nice-to-sends, weekly metrics digest, and voice capture. Drafts only, never sends. Client data stays coach-side.",
   "author": {
     "name": "Lindsey Hammer, Catalyst AI Solutions"
   },

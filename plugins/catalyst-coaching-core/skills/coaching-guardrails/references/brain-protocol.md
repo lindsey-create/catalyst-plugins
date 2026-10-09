@@ -45,6 +45,14 @@ BRAIN/v1/telemetry/brief-20260825-1400-complete?key=KEY&mode=telemetry&event=run
 | `recorder` | `zoom` or `fathom` | yes |
 | `state_folder_name` | `Catalyst - Jordan Example - System State` | yes |
 | `gmail_label` | `Coaching` | optional - restricts reads to that label when present |
+| `coach_email` | `jordan@example.com` | optional - the coach's own Gmail address; the only address any skill may send to. Missing = brief, recap summary, and digest are task output only; nothing sent, no draft |
+| `coach_stage_labels` | comma-separated stage names in order (earliest to latest); defaults documented in the Plugin Config Schema | optional - substituted anywhere a skill would otherwise name a specific stage |
+| `coach_intro_call_label` | label for a first discovery / intro session | optional - substituted anywhere a skill would otherwise use a generic "intro call" phrase |
+| `coach_assessment_types` | comma-separated names of the personality / motivator / goal-mapping instruments the coach uses | optional - substituted anywhere a skill would otherwise name a specific assessment |
+| `coach_methodology_name` | the coach's methodology framework (short name) | optional - substituted in the SKILL LOADED / method references |
+| `coach_platform_name` | the coach's coach-of-record platform, if any | optional - referenced only when the coach asks about platform-side artifacts |
+| `coach_vision_opening_patterns` | semicolon-separated first-person opening patterns the coach uses for vision statements | optional - passed to the vision-statement skill's Part A opening |
+| `coach_vision_ai_disclosure` | the AI-assistance disclosure line the coach's program requires at the end of a vision statement | optional - appended as the last line of Part A |
 
 ## Expected coach rows - timezone is per coach, never `*`
 

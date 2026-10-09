@@ -5,7 +5,7 @@ description: Lets the coach send Lindsey a change request or feedback about thei
 
 # Send Feedback
 
-**Plugin version: 0.2.1.** Load `coaching-guardrails` first. This skill creates one Gmail DRAFT to Lindsey. It never sends, and it never reads client data.
+**Plugin version: 0.3.2.** Load `coaching-guardrails` first. This skill creates one Gmail DRAFT to Lindsey. It never sends, and it never reads client data.
 
 ## Why this path
 
