@@ -9,7 +9,7 @@
       "name": "catalyst-coaching-core",
       "source": "./plugins/catalyst-coaching-core",
       "description": "Catalyst Core coaching ops system for coaches. Drafts only, never sends.",
-      "version": "0.3.2"
+      "version": "0.3.3"
     }
   ]
 }

@@ -5,7 +5,7 @@ description: Runs the coach's morning prep brief - one briefing card per coachin
 
 # Morning Prep Brief
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below.
 
 ## Setup
 
@@ -54,7 +54,7 @@ One-line mental model for the day. Then flag anything unusual: a client not seen
 
 ## Output
 
-Deliver the brief as the task's output AND as an email sent to `coach_email` (the one send the guardrails permit - never to anyone else, no CC, no BCC). If `coach_email` is missing, deliver as task output only and say so in the final message. The email is built to be scanned on a phone: bullets, one line per item, the client's name in bold everywhere it appears (cards, open-loop lines, "Did these happen?" lines), no filler sentences, and no heading with nothing under it. Hyphens, not em dashes. If there are no coaching calls today, say "No coaching calls today" and list what is on the calendar.
+Deliver the brief as the task's output AND as an email sent to `coach_email` (the one send the guardrails permit - never to anyone else, no CC, no BCC). If `coach_email` is missing, deliver as task output only and say so in the final message. If the send fails, follow the send-failure line in guardrails rule 1: task output plus at most one content-free notification, nothing else. Send it through the Gmail connector's `htmlBody` field - never markdown in the plain-text `body` field (a plain-text send shows every `**` as literal asterisks; seen 2026-10-07). Minimal HTML only: `<p>` for lines, `<b>` around the client's name everywhere it appears (cards, open-loop lines, "Did these happen?" lines), `<ul>`/`<li>` for bullets, `<hr>` between cards - no CSS, no tables, no images. Built to be scanned on a phone: one line per item, no filler sentences, no heading with nothing under it. Hyphens, not em dashes. The task output carries the same content in markdown. If there are no coaching calls today, say "No coaching calls today" and list what is on the calendar.
 
 ## Close
 

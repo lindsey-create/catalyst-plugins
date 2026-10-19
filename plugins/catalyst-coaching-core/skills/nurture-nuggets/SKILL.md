@@ -5,7 +5,7 @@ description: Runs the coach's "nice-to-send" nurture capture - takes a nugget (b
 
 # Nurture Nuggets (nice-to-send)
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. Every draft here is a "nice-to-send" per the need-to-send / nice-to-send nurture taxonomy the plugin ships around - one client-specific hook, no CTA, no task. The complementary path is `eod-recap` Step 8, which handles nurture touches surfaced during the daily recap; this skill handles nuggets the coach encounters anywhere else.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. Every draft here is a "nice-to-send" per the need-to-send / nice-to-send nurture taxonomy the plugin ships around - one client-specific hook, no CTA, no task. The complementary path is `eod-recap` Step 8, which handles nurture touches surfaced during the daily recap; this skill handles nuggets the coach encounters anywhere else.
 
 ## No client data on Catalyst side (design invariant, SOURCED from architecture principle)
 
@@ -15,7 +15,7 @@ This skill runs coach-side on the coach's Claude. Every input (nugget text/link,
 
 1. Build `run_id` = `nurture-<YYYYMMDD-HHMM UTC>`.
 2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `signature_style`, `ignore_contacts`, and `nurture_nuggets` (`on` | `off`; missing = off). **If `nurture_nuggets` is not `on`, stop here:** write telemetry `run_complete` with `detail=halted-config`, and - only if the coach invoked this skill by hand - say in the final message: "nurture-nuggets isn't turned on for your account." A scheduled invocation says nothing. Do not read anything else.
-3. Also read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5).
+3. Also read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5), and the newest `compounding-voice-email-*.md` file if one exists.
 4. HEARTBEAT - the first write of the run: create `run-<run_id>-start.md` in the state folder with one line: `<run_id> started <time, coach tz> plugin <version>`. Retry once per guardrails section 3; if it still fails, stop and report.
 5. Write telemetry `run_start`.
 6. Set TODAY = today's date in the coach's timezone. Every date comparison below uses TODAY.
@@ -114,7 +114,7 @@ Also write the per-client cadence log: `nurture-log-<client-slug>-<run_id>.md` i
 
 ## Step 7 - Reporting (final message)
 
-Per guardrails section 6, begin with `SKILL LOADED: nurture-nuggets v0.3.2`, then:
+Per guardrails section 6, begin with `SKILL LOADED: nurture-nuggets v0.3.3`, then:
 
 - The client chosen (from Path A or B), and if Path B, why - one line grounded in the client-file text
 - The variant used (1, 2, or 3), the source cite

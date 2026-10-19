@@ -1,28 +1,27 @@
 ---
 name: voice-capture
-description: Compares what the coach actually SENT this week to what the system DRAFTED (email track), and compares the coach's edited vision statements to the versions the system generated (vision-voice track). Reads from the coach's private state folder and writes both anonymized style-delta files to the coach's view-only Delta folder ONLY, so the coach's edits teach the system without client content leaving the coach's account. Runs weekly in the coach's account; Catalyst reads the deltas and updates the two voice profiles separately. Use when a scheduled task or the coach says "run voice capture", "what did the coach change", "voice delta", or "vision voice".
+description: Compares what the coach actually SENT this week to what the system DRAFTED (email track), and compares the coach's edited vision statements to the versions the system generated (vision-voice track). Reads from and writes to the coach's own private state folder only, maintaining two separate compounding voice files - one for email voice, one for vision voice - that the drafting skills read. Nothing leaves the coach's account. The coach's own `coach-voice` file always overrides both. Use when a scheduled task or the coach says "run voice capture", "what did the coach change", "voice profile", or "vision voice".
 ---
 
 # Voice Capture (edit capture)
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. This skill reads and writes files. It never drafts to a client and never sends.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. This skill reads and writes files. It never drafts to a client and never sends.
 
-**Write boundary (non-negotiable):** voice-capture READS from the coach's private `state_folder_name` and WRITES only to the coach's view-only `delta_folder_name` - every output, including the run heartbeat. It has no write path into the state folder. If the Delta folder is missing it HALTS and writes nothing; it never falls back to the state folder (2026-08-27 delta split; Option B; fail-safe).
+**Write boundary (non-negotiable):** voice-capture READS from and WRITES to the coach's private `state_folder_name` only - every output, including the run heartbeat. It has no write path out of the coach's account; nothing but counts-only telemetry ever reaches Catalyst. It NEVER creates or edits `coach-voice`, `voice-samples`, `coaching-method`, or any other coach-authored file - it writes only its own dated compounding files (2026-09-18 decision: the Delta folder is out; supersedes the 2026-08-27 delta split and Option B).
 
 ## Why this exists
 
-The system's drafts only get better if the coach's edits come back. The coach edits in Gmail (email drafts) and in the vision-statement Google Doc (vision statements), not in a form. So the system logs what it produced - email drafts by `eod-recap`, vision Part A baselines by `vision-statement` - and this skill compares each to what the coach actually kept, inside the coach's own account. Client content never leaves the coach's Google account; Catalyst receives only the anonymized delta files, in the view-only Delta folder.
+The system's drafts only get better if the coach's edits come back. The coach edits in Gmail (email drafts) and in the vision-statement Google Doc (vision statements), not in a form. So the system logs what it produced - email drafts by `eod-recap`, vision Part A baselines by `vision-statement` - and this skill compares each to what the coach actually kept, inside the coach's own account. Client content never leaves the coach's Google account, and neither does the voice profile: the compounding files stay in the coach's state folder and are read by the drafting skills in that same account. Catalyst receives counts-only telemetry and never reads a coach's voice profile.
 
-Two independent tracks. The **email track** learns the coach's everyday email voice. The **vision-voice track** learns how the coach edits AI-drafted vision statements - a different, higher-stakes voice. They produce separate deltas and separate proposed profiles, and are never blended.
+Two independent tracks. The **email track** learns the coach's everyday email voice. The **vision-voice track** learns how the coach edits AI-drafted vision statements - a different, higher-stakes voice. They produce separate compounding files and separate proposed profiles, and are never blended.
 
 ## Setup
 
 1. Build `run_id` = `voice-<YYYYMMDD-HHMM UTC>`.
-2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `delta_folder_name`, `signature_style`.
+2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `signature_style`.
 3. Write telemetry `run_start` (before reading any source or writing any file).
-4. **Resolve the Delta folder - before any Drive write.** Locate the folder named by `delta_folder_name`. If `delta_folder_name` is unset, or no such folder exists, HALT: write nothing to Drive (no heartbeat, no delta, and never anything to the state folder), emit telemetry `run_complete` with `detail=no-delta-dir`, and tell the coach in the final message that the view-only Delta folder named by `delta_folder_name` must be provisioned. Do not create the folder yourself; the coach provisions it.
-5. HEARTBEAT - the first Drive write, and the Delta-writability probe: create `run-<run_id>-start.md` in the **Delta folder** with one line: `<run_id> started <time, coach tz> plugin <version>`. On failure, apply the guardrails section 3 retry-once rule; if it still fails, the Delta folder is not writable - stop, emit `run_complete` `detail=no-delta-dir`, and report. Nothing later in the run works without it.
-6. Window = the last 7 days, coach timezone.
+4. HEARTBEAT - the first Drive write: create `run-<run_id>-start.md` in the **state folder** with one line: `<run_id> started <time, coach tz> plugin <version>`. On failure, apply the guardrails section 3 retry-once rule; if it still fails, stop and report. Nothing later in the run works without it.
+5. Window = the last 7 days, coach timezone.
 
 ## Email track
 
@@ -42,15 +41,21 @@ For each pair, describe the edit in style terms, not content terms:
 - Formatting: paragraphs merged or split, bullets added or removed.
 - Anything the coach added that the system could not have known (a personal detail, a scheduling specific) - label it "coach-only knowledge", not a voice miss.
 
-Never copy client content into the delta beyond the minimum phrase needed to show a word swap. No names of clients in the delta file - use "client A, B, C".
+Never copy client content into the compounding file beyond the minimum phrase needed to show a word swap. No names of clients in the compounding file - use "client A, B, C".
 
 ### E3 - Pattern summary
 
-Across all pairs: the three most frequent edits. Then a one-paragraph proposed update to the EMAIL voice profile in plain language ("drop the second paragraph of context; sign off with first name only; prefer 'chat' over 'conversation'"). Mark it PROPOSED. Catalyst decides whether to adopt it into `coach-voice`.
+Across all pairs: the three most frequent edits. Then a one-paragraph proposed update to the EMAIL voice profile in plain language ("drop the second paragraph of context; sign off with first name only; prefer 'chat' over 'conversation'"). Mark it PROPOSED. It is written into the compounding email-voice file, which the drafting skills read; the coach's own `coach-voice` file overrides it. Neither this skill nor Catalyst ever edits `coach-voice`.
 
-### E4 - Write the email delta
+### E4 - Write the email compounding file
 
-Create `voice-delta-<run_id>.md` in the **Delta folder**: pairs found, unpaired drafts, per-pair edit descriptions (client-anonymized), the pattern summary, the PROPOSED email voice-profile update. This is the only email-track content that crosses to Catalyst - no client names, no client content beyond the minimum phrase needed to show a word swap.
+Read the newest `compounding-voice-email-*.md` in the state folder (list, sort filename dates descending, take newest; none = first run, empty inheritance). Create `compounding-voice-email-<YYYY-MM-DD>.md` in the **state folder** - if one for today already exists, suffix with the run_id. Inherit-then-append, never a diff: the newest file is always complete on its own (the `client-profile` snapshot contract, guardrails section 3). Contents, in order: the header block below verbatim; inherited patterns from the prior file; this window's pairs found and unpaired drafts; per-pair edit descriptions (client-anonymized); the pattern summary; the PROPOSED email voice-profile update. Anonymization still applies even though nothing leaves the account - no client names, no client content beyond the minimum phrase needed to show a word swap.
+
+    # Compounding voice profile - EMAIL track
+    SYSTEM-MAINTAINED - written by the voice-capture skill each week.
+    Your own `coach-voice` file OVERRIDES everything here.
+    To change how your drafts sound, edit `coach-voice` - not this file.
+    Generated: <YYYY-MM-DD> | Prior: <prior filename, or "none"> | Plugin <version from this file's header>
 
 ## Vision-voice track (separate from the email track - never blended)
 
@@ -70,15 +75,21 @@ Diff the baseline Part A (system "before") against the Doc's current Part A (coa
 
 ### V4 - Vision-voice pattern summary + proposed profile
 
-Across all pairs this run: the three most frequent edit patterns. Then a one-paragraph PROPOSED update to the VISION-VOICE profile in plain style language - kept separate from the email `coach-voice` profile. Mark it PROPOSED; Catalyst decides whether to adopt it into a vision-specific voice reference. If fewer than two pairs exist, say "not enough vision edits to read a pattern yet" and propose nothing - do not manufacture a pattern.
+Across all pairs this run: the three most frequent edit patterns. Then a one-paragraph PROPOSED update to the VISION-VOICE profile in plain style language - kept separate from the email `coach-voice` profile. Mark it PROPOSED. It is written into the compounding vision-voice file, which `vision-statement` reads; the coach's own `coach-voice` file overrides it. Neither this skill nor Catalyst ever edits `coach-voice`. If fewer than two pairs exist, say "not enough vision edits to read a pattern yet" and propose nothing - do not manufacture a pattern.
 
-### V5 - Write the vision-voice delta
+### V5 - Write the vision compounding file
 
-Create `vision-voice-delta-<run_id>.md` in the **Delta folder**: baselines found in window, pairs diffed, unedited/skipped baselines (counts only), per-pair anonymized style descriptions, the pattern summary, the PROPOSED vision-voice profile update. Same boundary as the email delta and stricter: no client names, minimum phrasing, and never any Part B or Part C content. This is a SEPARATE file from `voice-delta-*`.
+Read the newest `compounding-voice-vision-*.md` in the state folder (same lookup as E4). Create `compounding-voice-vision-<YYYY-MM-DD>.md` in the **state folder**, same inherit-then-append contract. Contents: the header block below verbatim; inherited patterns; baselines found in window; pairs diffed; unedited/skipped baselines (counts only); per-pair anonymized style descriptions; the pattern summary; the PROPOSED vision-voice profile update. Same anonymization as the email file and stricter: no client names, minimum phrasing, never any Part B or Part C content. This is a SEPARATE file from `compounding-voice-email-*` and the two are NEVER merged.
+
+    # Compounding voice profile - VISION track
+    SYSTEM-MAINTAINED - written by the voice-capture skill each week.
+    Your own `coach-voice` file OVERRIDES everything here.
+    To change how your vision drafts sound, edit `coach-voice` - not this file.
+    Generated: <YYYY-MM-DD> | Prior: <prior filename, or "none"> | Plugin <version from this file's header>
 
 ## Close
 
-Telemetry `run_complete` with `rows_read` = (email drafts in window) + (vision baselines in window), `rows_due` = (email pairs) + (vision pairs), `drafts_created` = 0, `detail` = `ok` (the halt path in Setup step 4/5 already emitted `no-delta-dir` and stopped). Final message: email pairs found + top three email edits; vision pairs found + top three vision edits; where both delta files landed (the Delta folder); and any flag raised. If a track has fewer than two pairs, say so for that track and do not manufacture a pattern there.
+Telemetry `run_complete` with `rows_read` = (email drafts in window) + (vision baselines in window), `rows_due` = (email pairs) + (vision pairs), `drafts_created` = 0, `detail` = `ok`. Final message: email pairs found + top three email edits; vision pairs found + top three vision edits; which two compounding files were written, and where; and any flag raised. If a track has fewer than two pairs, say so for that track and do not manufacture a pattern there.
 
 ## Scheduled-task stub
 

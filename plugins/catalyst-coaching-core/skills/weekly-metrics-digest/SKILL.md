@@ -5,7 +5,7 @@ description: Runs the coach's weekly metrics digest - calls scheduled vs held, s
 
 # Weekly Metrics Digest
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
 
 ## Setup
 
@@ -41,11 +41,11 @@ Three to five sentences in plain language: what moved, what stalled, one pattern
 
 ## Output
 
-Deliver as the task output AND as an email sent to `coach_email` titled "Your week - <dates>" (the one send the guardrails permit - never to anyone else, no CC, no BCC). If `coach_email` is missing, deliver as task output only and say so in the final message. Hyphens, not em dashes.
+Deliver as the task output AND as an email sent to `coach_email` titled "Your week - <dates>" (the one send the guardrails permit - never to anyone else, no CC, no BCC). Send it through the Gmail connector's `htmlBody` field (minimal HTML: `<p>`, `<ul>`/`<li>`, and one plain `<table>` for the metrics - no CSS, no images); never markdown in the plain-text `body` field. If `coach_email` is missing, deliver as task output only and say so in the final message. If the send fails, follow the send-failure line in guardrails rule 1: task output plus at most one content-free notification, nothing else. Hyphens, not em dashes.
 
 ## Close
 
-Write `digest-<run_id>.md` to the state folder with the metrics table. Telemetry `run_complete` with `rows_read` = calls scheduled, `rows_due` = open loops outstanding, `drafts_created` = 0 - the coach email is a send, not a draft, and is never counted. Final message: summary per guardrails section 6.
+Write `<run_id>.md` to the state folder with the metrics table (the run_id already starts with `digest-`; never prepend it again). Telemetry `run_complete` with `rows_read` = calls scheduled, `rows_due` = open loops outstanding, `drafts_created` = 0 - the coach email is a send, not a draft, and is never counted. Final message: summary per guardrails section 6.
 
 ## Scheduled-task stub
 

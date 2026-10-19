@@ -5,13 +5,13 @@ description: Runs the coach's no-show recovery sequence - reads the no-shows the
 
 # No-Show Recovery
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. It never decides on its own that someone was a no-show - it only acts on no-shows the coach confirmed.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. It never decides on its own that someone was a no-show - it only acts on no-shows the coach confirmed.
 
 ## Setup
 
 1. Build `run_id` = `noshow-<YYYYMMDD-HHMM UTC>`.
 2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `signature_style`, and `ignore_contacts`. If `timezone` or `state_folder_name` is missing, stop here: write telemetry `run_complete` with `detail=halted-config` and say in the final message which row is missing. Do not read anything else.
-3. Also read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5).
+3. Also read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5), and the newest `compounding-voice-email-*.md` file if one exists.
 4. HEARTBEAT - the first write of the run: create `run-<run_id>-start.md` in the state folder with one line: `<run_id> started <time, coach tz> plugin <version>`. Retry once per guardrails section 3; if it still fails, stop and report.
 5. Write telemetry `run_start`.
 6. Set TODAY = today's date in the coach's timezone. Every date comparison below uses TODAY.

@@ -5,12 +5,12 @@ description: Runs the coach's end-of-day recap - finds today's coaching recordin
 
 # End-of-Day Recap + Follow-up Drafts
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS for clients and never sends to a client. Its one send is the recap summary to `coach_email` (guardrails rule 1).
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS for clients and never sends to a client. Its one send is the recap summary to `coach_email` (guardrails rule 1).
 
 ## Setup
 
 1. Build `run_id` = `recap-<YYYYMMDD-HHMM UTC>`.
-2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `recorder`, `state_folder_name`, `signature_style`, `no_show_word_floor` (missing = `30`). Also read `coaching-method` from the state folder if present (guardrails section 5).
+2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `recorder`, `state_folder_name`, `signature_style`, `no_show_word_floor` (missing = `30`). Also read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5), and the newest `compounding-voice-email-*.md` file if one exists.
 3. HEARTBEAT - the first write of the run: create `run-<run_id>-start.md` in the state folder with one line: `<run_id> started <time, coach tz> plugin <version>`. If this stalls or fails, nothing later in the run will work - stop and report.
 4. Write telemetry `run_start`.
 
@@ -45,6 +45,8 @@ Retrieve the transcript (and the recorder's own summary or next steps if availab
 
 **No-show vs. real call (word-count floor).** Before anything else, count the spoken words in the transcript - strip that recorder's own formatting first (timestamps, cue numbers, speaker-label headers; per-recorder detail in `references/transcript-formats.md`) and count only words a person said. If the count is below `no_show_word_floor`, do NOT draft a recap for this event - not enough was said for this to have been a real call, and scheduled session length does not override this. Route it into Step 2b's "Did these happen?" list instead of continuing to Step 4, even though a recording exists.
 
+**Real recording, no client present (solo session).** If the count clears the floor but what was said shows no one else on the call - no one is addressed, no one answers, or the speaker says they are working alone, testing, or talking something through - this is not a coaching call. Do not draft and do not run Steps 4-8 for it; route it into Step 2b's "Did these happen?" list as "Recording at <time> in <client>'s slot sounds like a solo session - did <client> show?". Judge this on the words, never on speaker labels: one label carrying a two-way conversation is the phone-bridge case below, not a solo session.
+
 **Trust check on a confirmed real call.** If the word count clears the floor, check whether the transcript attributes more than one distinct speaker (per that recorder's own speaker labels). A single-speaker-attributed transcript is not evidence the call didn't happen - a coach phone-bridging a call through one mic flattens a real two-way conversation to one labeled speaker. Do not auto-reject it, and do not silently auto-trust it either: continue to the name-check and Step 4 as normal, but add one line to the recap card itself: "Single speaker in the transcript - worth a quick confirm that this reflects the whole call." A multi-speaker transcript needs no such flag.
 
 **Client match (acts on the Step 2 rule).**
@@ -77,6 +79,8 @@ Draft the follow-up to the client in the coach's voice (guardrails section 4). S
 - Write in sentences. Use a short hyphen list only when the client has three or more distinct action or prep items; fewer than three stay in a sentence.
 - Before creating the draft, reread it and cut any sentence that repeats what the client heard on the call, explains the coach's process, or could be deleted without the client missing anything.
 - The coach's `coach-voice` file wins on any of these if it says otherwise.
+
+**Address check (before anything is created).** Compare the client's address on the calendar event with the address on file for this client: the base profile file, prior `draft-*-<client-slug>.md` files, and prior sent mail to this client. If they differ in any way - even one character - use neither: create the draft with NO recipient, prefix the subject "[Confirm address] ", and name both addresses in the final message. A typo'd address is the one send that cannot be taken back. No address on file (a first call) = the event address is used as normal. Reconcile these by `subject:"[Confirm address]"` dated today, like the rule-3 case below.
 
 **Reconcile against Gmail before creating (pass two - Step 4's same-day state-file check is pass one).** Drafts are durable; a prior run may have created the Gmail draft and then died before writing its `draft-*.md`. Call Gmail list drafts with `to:<client_email>` and look for a draft dated today (coach timezone). If one exists: adopt it - use its id as this call's Gmail draft id, write the `draft-<run_id>-<client-slug>.md` below from its body with the note "reconciled from Gmail", do NOT create a second draft, do not count it in `drafts_created`, and name the id in the final message. If more than one exists: adopt the newest, list the others under `duplicates_found` in the final message, create nothing. If none: create it as a **Gmail draft** in the coach's account, addressed to the client only - or, for a Step 2 rule-3 match, with NO recipient at all and the subject prefixed "[Confirm client] " (reconcile those by `subject:"[Confirm client]"` dated today instead of `to:`). **No BCC, no CC** - client content never leaves the coach's account - that is a design rule, not a setting. Never send.
 
@@ -139,9 +143,9 @@ End the output with: "Anything about today you want to flag for the system? One 
 
 ## Close
 
-Write `<run_id>.md` to the state folder: events found, matches, drafts created, flags. Write telemetry `run_complete` with `rows_read` = events found, `rows_due` = matches, `drafts_created` = drafts created, `detail` = `ok-l<loops total>a<added>c<closed>` (for example `ok-l41a4c3`, counts only), or the applicable halt token. Final message: the summary per guardrails section 6. If no coaching calls today, say so and skip to the Tomorrow preview.
+Write `<run_id>.md` to the state folder: events found, matches, drafts created, flags. Write telemetry `run_complete` with `rows_read` = events found, `rows_due` = matches, `drafts_created` = drafts created, `detail` = `ok-l<loops total>a<added>c<closed>` (for example `ok-l41a4c3`, counts only), or the applicable halt token. Final message: the summary per guardrails section 6. If no coaching calls today: say so, then still run Step 2c (a recording with no event is exactly what a quiet day can hide), Step 6's CLOSE FIRST pass (closures, draft lineage, capture-time tests - a quiet day is when sent mail gets reconciled against open loops; nothing to add), Step 9, and Step 10. Skip Steps 2-5, 7, and 8. Write a new open-loops file only if a status changed. `detail` stays `no-calls`; name any closures in the final message.
 
-Then send the recap to `coach_email` (the one send the guardrails permit - never to anyone else, no CC, no BCC): every recap card, the "Did these happen?" list, the open-loop summary, the Step 8 and Step 9 items, the tomorrow preview, and the closing question. The email's last line states: "Answers to 'Did these happen?' and `done L-xxx` are read only from a reply in this task, not from a reply to this email." Client follow-up drafts are never attached or quoted in it. If `coach_email` is missing, deliver as task output only and say so in the final message.
+Then send the recap to `coach_email` (the one send the guardrails permit - never to anyone else, no CC, no BCC): every recap card, the "Did these happen?" list, the open-loop summary, the Step 8 and Step 9 items, the tomorrow preview, and the closing question. The email's last line states: "Answers to 'Did these happen?' and `done L-xxx` are read only from a reply in this task, not from a reply to this email." Send it through the Gmail connector's `htmlBody` field with the same minimal HTML the morning brief uses (`<p>`, `<b>` around client names, `<ul>`/`<li>`, `<hr>` between cards - no CSS, no tables, no images); never markdown in the plain-text `body` field. Client follow-up drafts are never attached or quoted in it. If `coach_email` is missing, deliver as task output only and say so in the final message. If the send fails, follow the send-failure line in guardrails rule 1: task output plus at most one content-free notification, nothing else.
 
 ## Scheduled-task setup (done with Lindsey at onboarding)
 

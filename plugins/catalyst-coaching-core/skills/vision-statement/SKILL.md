@@ -5,13 +5,13 @@ description: Drafts a client's vision statement on request - pulls every recorde
 
 # Vision Statement
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This skill writes to the coach's state folder only (the vision Doc, its capture baseline, and run/telemetry files). It never emails, never sends, and writes nowhere else.
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill writes to the coach's state folder only (the vision Doc, its capture baseline, and run/telemetry files). It never emails, never sends, and writes nowhere else.
 
 ## Setup
 
 1. Build `run_id` = `vision-<YYYYMMDD-HHMM UTC>`.
 2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `recorder`, `state_folder_name`, `signature_style`, `ignore_contacts`.
-3. Read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5).
+3. Read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5), and the newest `compounding-voice-vision-*.md` file if one exists.
 4. HEARTBEAT - create `run-<run_id>-start.md` in the state folder (guardrails section 3 retry rule). Write telemetry `run_start`.
 5. The client name comes from the coach's request. If it is missing or ambiguous (two clients could match), ask one question and stop. Never guess a client.
 
@@ -42,7 +42,7 @@ Two parts. Part A is the vision statement itself - what the coach shares. Part B
 5. **Bridge to Action** - the gap between today and the vision, in plain terms; what the coach will work through with them next.
 6. **Questions to Explore Further** - three to five for the next session, from gaps between the note and the conversation, things hinted at but not elaborated, tensions between the vision and the stated targets, decisions coming up. Questions a coach asks, not prompts; stage-appropriate framing from the `coaching-method` file.
 
-Voice for Part A is the client's, shaped by the coach's phrasing habits from `coach-voice`; voice for Part B is the coach's per guardrails section 4.
+Voice for Part A is the client's, shaped by the coach's phrasing habits from `coach-voice` and then by the newest `compounding-voice-vision-*.md` file in the state folder if one exists - `coach-voice` wins where they disagree, and the compounding file is system-maintained, never coach-authored; voice for Part B is the coach's per guardrails section 4.
 
 **Part C - Image prompt (optional, coach-only).** A single-paragraph image-generation prompt the coach can paste into an approved image tool to produce a one-page visual for the client. Describe a MOMENT from the vision statement (a specific scene from Part A), never the person's face and never a generic stock-photo subject. Style: warm, optimistic flat-illustration; calm, grounded palette; aspirational but grounded; no clip-art, no stock-photo gloss. One paragraph, nothing else. This is coach-only working material and it carries the client's vision content, so it sits below the do-not-share line; the coach generates the image themselves in their own approved tool - the skill never calls an image API and never generates the image itself.
 
@@ -50,7 +50,7 @@ Voice for Part A is the client's, shaped by the coach's phrasing habits from `co
 
 Create a Google Doc in the state folder named `vision-<client-slug>-<run_id>`, containing: a short coach-facing header (sources used, what was missing, what changed if a revision), then Part A, then Part B under a line reading "FOR <COACH_FIRST_NAME> ONLY - do not share below this line," then Part C (the image prompt) beneath Part B. Never edit an earlier draft; each run writes a new file (guardrails section 3 retry rule applies).
 
-Also write a capture baseline for the vision-voice track: `vision-baseline-<client-slug>-<run_id>.md` in the state folder (System State - private; never the Delta folder, never shared), containing a short header (`source: vision-doc`, `run_id`, `client-slug`, the Doc name, `generated-at`) followed by the exact Part A text as generated. This is the "before" that `voice-capture` diffs against the coach's edited Doc, on a SEPARATE track from email voice: it is never a `draft-*.md` file and never pairs against sent mail. The baseline holds client content and stays in the coach's account - only an anonymized delta ever leaves.
+Also write a capture baseline for the vision-voice track: `vision-baseline-<client-slug>-<run_id>.md` in the state folder (System State - private, never shared), containing a short header (`source: vision-doc`, `run_id`, `client-slug`, the Doc name, `generated-at`) followed by the exact Part A text as generated. This is the "before" that `voice-capture` diffs against the coach's edited Doc, on a SEPARATE track from email voice: it is never a `draft-*.md` file and never pairs against sent mail. The baseline holds client content and stays in the coach's account - only an anonymized delta ever leaves.
 
 Save nothing else. Do not create an email - the coach shares the statement the way they choose, and pastes the final into the client's portal by hand.
 

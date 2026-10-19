@@ -5,7 +5,7 @@ description: Writes a new dated snapshot file that compounds a client's coaching
 
 # Client Profile (rolling snapshot + weekly sweep)
 
-**Plugin version: 0.3.2.** Load `coaching-guardrails` first. Its rules override everything below. This skill reads state files, writes new dated snapshot files, and never edits the coach-owned base file or any prior snapshot. It never emails and never sends. It writes ONLY to the coach's private state folder - never to the shared `delta_folder_name` (guardrails + §8 of the Config Schema).
+**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill reads state files, writes new dated snapshot files, and never edits the coach-owned base file or any prior snapshot. It never emails and never sends. It writes ONLY to the coach's private state folder (guardrails + §8 of the Config Schema).
 
 ## Why this exists
 
@@ -30,7 +30,7 @@ Three invocations, one skill:
 2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `ignore_contacts`. Sweep only: also read `client_profile` (must be `on`) and `client_profile_sweep_day` (default `sun`).
 3. HEARTBEAT - the first write of the run: create `run-<run_id>-start.md` in the state folder with one line: `<run_id> started <time, coach tz> plugin <version>`. If this stalls or fails, nothing later in the run will work - stop and report.
 4. Write telemetry `run_start`.
-5. Read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5) - the observations block uses the coach's own phrasing.
+5. Read `coach-voice` and `coaching-method` from the state folder if present (guardrails sections 4 and 5), and the newest `compounding-voice-email-*.md` file if one exists - the observations block uses the coach's own phrasing.
 
 ## MANUAL REFRESH PATH - `refresh client profile for <name>`
 
@@ -238,7 +238,7 @@ Key: <coach KEY>
 Per guardrails section 6:
 
 ```
-SKILL LOADED: client-profile v0.3.2
+SKILL LOADED: client-profile v0.3.3
 
 <one-line summary>: <file(s) created>
 Sources read: <count>
