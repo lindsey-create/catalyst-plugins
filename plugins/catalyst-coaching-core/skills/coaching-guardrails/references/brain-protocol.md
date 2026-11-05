@@ -46,6 +46,11 @@ BRAIN/v1/telemetry/brief-20260825-1400-complete?key=KEY&mode=telemetry&event=run
 | `state_folder_name` | `Catalyst - Jordan Example - System State` | yes |
 | `gmail_label` | `Coaching` | optional - restricts reads to that label when present |
 | `coach_email` | `jordan@example.com` | optional - the coach's own Gmail address; the only address any skill may send to. Missing = brief, recap summary, and digest are task output only; nothing sent, no draft |
+| `ignore_contacts` | `assistant@example.com, example-vendor.com` | optional - comma-separated addresses or domains that are never clients; every skill that enumerates contacts skips them and notes the skip |
+| `precall_channel` | `email`, `text`, or `off` | optional - end-of-day recap Step 9 drafts a pre-call note to tomorrow's clients when `email`, produces a copy block when `text`; missing = off |
+| `legacy_cleanup` | `on` or `off` | optional - lets the end-of-day recap (Step 6) and morning brief surface pre-ID open loops for cleanup; missing = off |
+| `nurture_nuggets` | `on` or `off` | optional - turns the nurture-nuggets skill on for this coach; missing = off, the skill halts with `halted-config` |
+| `dormant_leads` | `on` or `off` | optional - turns the dormant-leads skill on for this coach; missing = off, the skill halts with `halted-config` |
 | `coach_stage_labels` | comma-separated stage names in order (earliest to latest); defaults documented in the Plugin Config Schema | optional - substituted anywhere a skill would otherwise name a specific stage |
 | `coach_intro_call_label` | label for a first discovery / intro session | optional - substituted anywhere a skill would otherwise use a generic "intro call" phrase |
 | `coach_assessment_types` | comma-separated names of the personality / motivator / goal-mapping instruments the coach uses | optional - substituted anywhere a skill would otherwise name a specific assessment |

@@ -5,7 +5,7 @@ description: Writes a new dated snapshot file that compounds a client's coaching
 
 # Client Profile (rolling snapshot + weekly sweep)
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill reads state files, writes new dated snapshot files, and never edits the coach-owned base file or any prior snapshot. It never emails and never sends. It writes ONLY to the coach's private state folder (guardrails + §8 of the Config Schema).
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This skill reads state files, writes new dated snapshot files, and never edits the coach-owned base file or any prior snapshot. It never emails and never sends. It writes ONLY to the coach's private state folder (guardrails + §8 of the Config Schema).
 
 ## Why this exists
 
@@ -238,7 +238,7 @@ Key: <coach KEY>
 Per guardrails section 6:
 
 ```
-SKILL LOADED: client-profile v0.3.3
+SKILL LOADED: client-profile v0.3.4
 
 <one-line summary>: <file(s) created>
 Sources read: <count>

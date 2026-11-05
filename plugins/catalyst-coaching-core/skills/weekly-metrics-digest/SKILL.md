@@ -5,7 +5,7 @@ description: Runs the coach's weekly metrics digest - calls scheduled vs held, s
 
 # Weekly Metrics Digest
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This digest is for the coach's eyes. It never compares this coach to any other coach.
 
 ## Setup
 
@@ -19,7 +19,7 @@ description: Runs the coach's weekly metrics digest - calls scheduled vs held, s
 
 - Google Calendar for the week - coaching events.
 - Recorder (`zoom` or `fathom`) for the week - recordings.
-- Gmail `in:sent` for the week - the coach's sent emails to the clients on this week's calendar (restricted to `gmail_label` if configured).
+- Gmail `in:sent` for the week - the coach's sent emails to the clients on this week's calendar (restricted to `gmail_label` if configured). If no clients are on this week's calendar, skip the Gmail read entirely - do not widen the search.
 - The state folder - this week's `recap-*.md`, `brief-*.md`, `draft-*.md`, and the newest `open-loops-*.md`.
 
 ## Metrics

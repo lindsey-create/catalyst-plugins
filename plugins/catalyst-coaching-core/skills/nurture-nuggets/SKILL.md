@@ -5,7 +5,7 @@ description: Runs the coach's "nice-to-send" nurture capture - takes a nugget (b
 
 # Nurture Nuggets (nice-to-send)
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. Every draft here is a "nice-to-send" per the need-to-send / nice-to-send nurture taxonomy the plugin ships around - one client-specific hook, no CTA, no task. The complementary path is `eod-recap` Step 8, which handles nurture touches surfaced during the daily recap; this skill handles nuggets the coach encounters anywhere else.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. Every draft here is a "nice-to-send" per the need-to-send / nice-to-send nurture taxonomy the plugin ships around - one client-specific hook, no CTA, no task. The complementary path is `eod-recap` Step 8, which handles nurture touches surfaced during the daily recap; this skill handles nuggets the coach encounters anywhere else.
 
 ## No client data on Catalyst side (design invariant, SOURCED from architecture principle)
 
@@ -75,6 +75,7 @@ Read every recent touch for this client, not just nurture:
 - Newest `nurture-log-<client-slug>-*.md` in the state folder
 - All `draft-*-<client-slug>.md` files (any type - follow-up, no-show, pre-call, nurture) from the last 30 days
 - Newest `noshow-state-*.md` rows for this contact
+- Newest `dormant-state-*.md` rows for this contact
 
 Compute the last touch date across every source. If TODAY is fewer than **21 days** after the last touch of any kind, STOP by default. Show the coach:
 
@@ -114,7 +115,7 @@ Also write the per-client cadence log: `nurture-log-<client-slug>-<run_id>.md` i
 
 ## Step 7 - Reporting (final message)
 
-Per guardrails section 6, begin with `SKILL LOADED: nurture-nuggets v0.3.3`, then:
+Per guardrails section 6, begin with `SKILL LOADED: nurture-nuggets v0.3.4`, then:
 
 - The client chosen (from Path A or B), and if Path B, why - one line grounded in the client-file text
 - The variant used (1, 2, or 3), the source cite

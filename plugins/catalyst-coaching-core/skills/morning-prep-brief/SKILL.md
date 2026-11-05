@@ -5,7 +5,7 @@ description: Runs the coach's morning prep brief - one briefing card per coachin
 
 # Morning Prep Brief
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below.
 
 ## Setup
 
@@ -50,7 +50,7 @@ Read yesterday's calendar (coach timezone). For each coaching call, check whethe
 
 ## Step 5 - Top of the brief
 
-One-line mental model for the day. Then flag anything unusual: a client not seen in 30+ days suddenly booking, a double-booked slot, a new discovery / intro session (label per `coach_intro_call_label`) from an unrecognized source.
+One-line mental model for the day. Then flag anything unusual: a client not seen in 30+ days suddenly booking, a double-booked slot, a new discovery / intro session (label per `coach_intro_call_label`) from an unrecognized source. If the newest `dormant-state-*` file in the state folder has a run log dated within the last 7 days with `drafts_planned` greater than zero, add one line: "<N> dormant-lead drafts from <date> are waiting in Gmail Drafts." No names, no new email.
 
 ## Output
 

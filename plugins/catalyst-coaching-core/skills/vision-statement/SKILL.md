@@ -5,7 +5,7 @@ description: Drafts a client's vision statement on request - pulls every recorde
 
 # Vision Statement
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill writes to the coach's state folder only (the vision Doc, its capture baseline, and run/telemetry files). It never emails, never sends, and writes nowhere else.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This skill writes to the coach's state folder only (the vision Doc, its capture baseline, and run/telemetry files). It never emails, never sends, and writes nowhere else.
 
 ## Setup
 

@@ -5,7 +5,7 @@ description: Runs the coach's no-show recovery sequence - reads the no-shows the
 
 # No-Show Recovery
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. It never decides on its own that someone was a no-show - it only acts on no-shows the coach confirmed.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS. It never sends. It never decides on its own that someone was a no-show - it only acts on no-shows the coach confirmed.
 
 ## Setup
 
@@ -26,7 +26,12 @@ Skip any contact whose address or domain is on `ignore_contacts`, and note the s
 
 ## Step 2 - Reconcile against Gmail before deciding anything
 
-Drafts are durable; a prior run may have drafted and then died before writing state. For every `active` row, call Gmail list drafts with `to:<contact_email>`. If a draft exists that is newer than the row's `last_touch_date` (or newer than `missed_date` when there is no touch yet), adopt it: touch_number + 1, last_touch_date = that draft's date (coach timezone), last_draft_id = its id, note "reconciled from Gmail". If more than one such draft exists, adopt the newest and list the others under `duplicates_found` - do not create anything. If a row's `last_draft_id` starts with `pending-` and no draft newer than `last_touch_date` exists, the earlier run claimed a touch it never made: roll the row back one touch and note "claim rolled back".
+Drafts are durable; a prior run may have drafted and then died before writing state. For every `active` row, call Gmail list drafts with `to:<contact_email>`. Then, by what the row's `last_draft_id` says:
+
+- **Starts with `pending-<run_id>`** (that run claimed a touch, then drafted): resolve it by id, never by date. Read `draft-<run_id>-<client-slug>.md` from the state folder and take its `gmail_draft_id`. If that draft is still in Gmail (exact match on the id): the claim was made good - set last_draft_id = that id, keep touch_number and last_touch_date, note "reconciled by id". If the draft log exists but the draft is gone: the coach sent or deleted it - keep the touch, set last_draft_id = the logged id, note "draft sent or removed by coach". If the draft log itself is missing: the earlier run died before drafting - roll the row back one touch (touch_number - 1; last_touch_date = the previous touch's date, or blank at touch 0) and note "claim rolled back".
+- **A real draft id, or blank:** ignore the draft whose id equals `last_draft_id` - it is already recorded. If another draft to this contact exists dated **strictly after** `last_touch_date` (or on or after `missed_date` when there is no touch yet), the coach - or a chat on their behalf - touched this contact outside the sequence. Adopt it so the sequence does not stack a scripted note on a personal one: touch_number + 1, last_touch_date = its date (coach timezone), last_draft_id = its id, and record the provenance in the run log's notes (this tracker has no evidence column): `unrecorded draft <id> dated <date> adopted as touch <n>`. Count it under `drafts_adopted` in the run log and tell the coach in the final message, one line per adopted draft: what was found, that it was counted as touch <n>, and the next due date.
+
+If more than one draft qualifies, use the newest and list the others under `duplicates_found` - do not create anything, do not delete anything.
 
 ## Step 3 - Roll-off checks (did they come back on their own?)
 
@@ -50,7 +55,7 @@ A row is due only when status = `active` AND TODAY >= its due date. Show the mat
 
 ## Step 5 - Write the tracker FIRST (the claim), then draft
 
-Create a new file `noshow-state-<run_id>.md` in the state folder. Never edit an existing one. Contents: a `last_intake` line (the newest `no-shows-` file name read this run), the column header, every row (rows not due carried forward unchanged, reconciled rows with adopted values, rolled-off rows with their new status), and a run log: run_id, timestamp, rows_read, rows_added, rows_reconciled, rows_rolled_off, rows_due, drafts_planned, the due-date math per row, errors, notes.
+Create a new file `noshow-state-<run_id>.md` in the state folder. Never edit an existing one. Contents: a `last_intake` line (the newest `no-shows-` file name read this run), the column header, every row (rows not due carried forward unchanged, reconciled rows with adopted values, rolled-off rows with their new status), and a run log: run_id, timestamp, rows_read, rows_added, rows_reconciled, rows_rolled_off, rows_due, drafts_planned, drafts_adopted, the due-date math per row, errors, notes.
 
 For each DUE row: touch_number + 1, last_touch_date = TODAY, last_draft_id = `pending-<run_id>`. If touch_number reaches 3, status = `stale`.
 

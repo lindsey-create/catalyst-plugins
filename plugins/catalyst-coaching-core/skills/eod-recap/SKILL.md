@@ -5,7 +5,7 @@ description: Runs the coach's end-of-day recap - finds today's coaching recordin
 
 # End-of-Day Recap + Follow-up Drafts
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS for clients and never sends to a client. Its one send is the recap summary to `coach_email` (guardrails rule 1).
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. Its rules override everything below. This skill creates Gmail DRAFTS for clients and never sends to a client. Its one send is the recap summary to `coach_email` (guardrails rule 1).
 
 ## Setup
 
@@ -84,7 +84,7 @@ Draft the follow-up to the client in the coach's voice (guardrails section 4). S
 
 **Reconcile against Gmail before creating (pass two - Step 4's same-day state-file check is pass one).** Drafts are durable; a prior run may have created the Gmail draft and then died before writing its `draft-*.md`. Call Gmail list drafts with `to:<client_email>` and look for a draft dated today (coach timezone). If one exists: adopt it - use its id as this call's Gmail draft id, write the `draft-<run_id>-<client-slug>.md` below from its body with the note "reconciled from Gmail", do NOT create a second draft, do not count it in `drafts_created`, and name the id in the final message. If more than one exists: adopt the newest, list the others under `duplicates_found` in the final message, create nothing. If none: create it as a **Gmail draft** in the coach's account, addressed to the client only - or, for a Step 2 rule-3 match, with NO recipient at all and the subject prefixed "[Confirm client] " (reconcile those by `subject:"[Confirm client]"` dated today instead of `to:`). **No BCC, no CC** - client content never leaves the coach's account - that is a design rule, not a setting. Never send.
 
-Save the as-drafted body to the state folder as `draft-<run_id>-<client-slug>.md` with: client, subject, the draft text exactly as created, the Gmail draft id if available, and a line "fulfils: L-014, L-016" naming every open-loop ID this email fulfils when sent (none is a valid answer). The `voice-capture` skill compares this file to what the coach actually sends, inside the coach's own account, and writes only an anonymized delta for Catalyst.
+Save the as-drafted body to the state folder as `draft-<run_id>-<client-slug>.md` with: client, a `to:` line (the address the draft was created with, or blank for a "[Confirm client]" / "[Confirm address]" draft), a `drafted_at:` line (UTC timestamp of the create-draft call), subject, the draft text exactly as created, the Gmail draft id if available, and a line "fulfils: L-014, L-016" naming every open-loop ID this email fulfils when sent (none is a valid answer). The `voice-capture` skill compares this file to what the coach actually sends, inside the coach's own account, and writes only an anonymized delta for Catalyst.
 
 ## Step 6 - Open-loop capture and closure
 
@@ -101,7 +101,7 @@ THEN ADD today's loops from each matched call: who owes what, by when, in the cl
 - coach owes an introduction: `sent to <client> after <today> naming a third party and containing "<topic word>"`
 - client owes something the coach will receive by email: `received from <client> after <today> with attachment` or `... containing "<word>"`
 - anything with no email signature (a phone call, a decision, "think about it"): `closes_when: coach-done only`
-Use a distinctive word from the transcript, never a generic one ("following up", "thanks"). If you cannot write a specific test, write `coach-done only` - a vague test is worse than none.
+Address every `sent to` / `received from` test to the client's address on file (the base profile file, else the address on the calendar event) - never an address the client has not used. Use a distinctive word from the transcript, never a generic one ("following up", "thanks"). If you cannot write a specific test, write `coach-done only` - a vague test is worse than none.
 
 Legacy loops (no ID or no `closes_when` from an earlier plugin version): assign IDs in file order and set `closes_when: coach-done only`. Do not surface them for cleanup unless the coach's `legacy_cleanup` row is `on`.
 

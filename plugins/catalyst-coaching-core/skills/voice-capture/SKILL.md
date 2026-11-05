@@ -5,7 +5,7 @@ description: Compares what the coach actually SENT this week to what the system 
 
 # Voice Capture (edit capture)
 
-**Plugin version: 0.3.3.** Load `coaching-guardrails` first. This skill reads and writes files. It never drafts to a client and never sends.
+**Plugin version: 0.3.4.** Load `coaching-guardrails` first. This skill reads and writes files. It never drafts to a client and never sends.
 
 **Write boundary (non-negotiable):** voice-capture READS from and WRITES to the coach's private `state_folder_name` only - every output, including the run heartbeat. It has no write path out of the coach's account; nothing but counts-only telemetry ever reaches Catalyst. It NEVER creates or edits `coach-voice`, `voice-samples`, `coaching-method`, or any other coach-authored file - it writes only its own dated compounding files (2026-09-18 decision: the Delta folder is out; supersedes the 2026-08-27 delta split and Option B).
 
@@ -19,15 +19,15 @@ Two independent tracks. The **email track** learns the coach's everyday email vo
 
 1. Build `run_id` = `voice-<YYYYMMDD-HHMM UTC>`.
 2. Fetch config (`mode=brain`). Resolve `timezone`, `coach_first_name`, `state_folder_name`, `signature_style`.
-3. Write telemetry `run_start` (before reading any source or writing any file).
-4. HEARTBEAT - the first Drive write: create `run-<run_id>-start.md` in the **state folder** with one line: `<run_id> started <time, coach tz> plugin <version>`. On failure, apply the guardrails section 3 retry-once rule; if it still fails, stop and report. Nothing later in the run works without it.
+3. HEARTBEAT - the first write of the run: create `run-<run_id>-start.md` in the **state folder** with one line: `<run_id> started <time, coach tz> plugin <version>`. On failure, apply the guardrails section 3 retry-once rule; if it still fails, stop and report. Nothing later in the run works without it.
+4. Write telemetry `run_start` - only after the heartbeat file write has been confirmed to succeed; a `run_start` with no heartbeat file is a broken invariant.
 5. Window = the last 7 days, coach timezone.
 
 ## Email track
 
 ### E1 - Pair drafts with sent emails
 
-Read this window's `draft-*.md` files from the state folder. For each, look in Gmail `in:sent` (restricted to `gmail_label` if configured) for the sent email to the same recipient with the same or a closely edited subject, sent after the draft was created. Pair them. Unpaired drafts = not sent (count them; do not speculate why).
+Read this window's `draft-*.md` files from the state folder. For each, look in Gmail `in:sent` (restricted to `gmail_label` if configured) for the sent email to the same recipient (the file's `to:` line when present) with the same or a closely edited subject, sent after the draft was created (the file's `drafted_at:` line when present, else the file's own created time). Pair them. Unpaired drafts = not sent (count them; do not speculate why).
 
 ### E2 - Describe each edit
 
@@ -89,7 +89,7 @@ Read the newest `compounding-voice-vision-*.md` in the state folder (same lookup
 
 ## Close
 
-Telemetry `run_complete` with `rows_read` = (email drafts in window) + (vision baselines in window), `rows_due` = (email pairs) + (vision pairs), `drafts_created` = 0, `detail` = `ok`. Final message: email pairs found + top three email edits; vision pairs found + top three vision edits; which two compounding files were written, and where; and any flag raised. If a track has fewer than two pairs, say so for that track and do not manufacture a pattern there.
+Telemetry `run_complete` with `rows_read` = (email drafts in window) + (vision baselines in window), `rows_due` = (email pairs) + (vision pairs), `drafts_created` = 0, `detail` = `ok`. Final message: email pairs found + top three email edits; vision pairs found + top three vision edits; which compounding file(s) were written, and where (the vision file is absent when no baselines were in window); and any flag raised. If a track has fewer than two pairs, say so for that track and do not manufacture a pattern there.
 
 ## Scheduled-task stub
 
